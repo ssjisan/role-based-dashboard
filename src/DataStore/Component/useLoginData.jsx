@@ -1,9 +1,11 @@
 import { useState } from "react";
 import axios from "axios";
+import usePermissionData from "./usePermissionData";
 
 export const useLoginData = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { fetchRolePermissions } = usePermissionData();
 
   // Login function
   const login = async (email, password) => {
@@ -17,19 +19,23 @@ export const useLoginData = () => {
       });
 
       if (response.data.success) {
+        const { user, token } = response.data;
+
         // Save token to localStorage
-        localStorage.setItem("rbac_auth_token", response.data.token);
+        localStorage.setItem("rbac_auth_token", token);
 
         // Save user info to localStorage
-        localStorage.setItem(
-          "rbac_user_info",
-          JSON.stringify(response.data.user)
-        );
+        localStorage.setItem("rbac_user_info", JSON.stringify(user));
+
+        // Fetch and save role permissions
+        if (user.role) {
+          await fetchRolePermissions(user.role.$oid || user.role);
+        }
 
         return {
           success: true,
-          user: response.data.user,
-          token: response.data.token,
+          user,
+          token,
         };
       } else {
         setError(response.data.message || "Login failed");
@@ -49,6 +55,7 @@ export const useLoginData = () => {
   const logout = () => {
     localStorage.removeItem("rbac_auth_token");
     localStorage.removeItem("rbac_user_info");
+    localStorage.removeItem("rbac_role_info");
     window.location.href = "/login";
   };
 
@@ -68,12 +75,21 @@ export const useLoginData = () => {
     return localStorage.getItem("rbac_auth_token");
   };
 
+  // Initialize user session on app start
+  const initializeSession = async () => {
+    const user = getCurrentUser();
+    if (user?.role) {
+      await fetchRolePermissions(user.role.$oid || user.role);
+    }
+  };
+
   return {
     login,
     logout,
     isLoggedIn,
     getCurrentUser,
     getToken,
+    initializeSession,
     loading,
     error,
     setError,

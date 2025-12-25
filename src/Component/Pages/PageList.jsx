@@ -1,17 +1,42 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { DataContext } from "../../DataStore/DataContext";
 import { Link } from "react-router-dom";
 
 export default function PageList() {
-  const { pages, pagesLoading } = useContext(DataContext);
+  const { pages, pagesLoading, deletePage, hasPermission } =
+    useContext(DataContext);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedPage, setSelectedPage] = useState(null);
+  const canCreatePage = hasPermission("Pages", "create");
+  const canEdit = hasPermission("Pages", "edit");
+  const canDelete = hasPermission("Pages", "delete");
+  const handleDeleteClick = (page) => {
+    setSelectedPage(page);
+    setShowModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (selectedPage) {
+      await deletePage(selectedPage._id);
+      setShowModal(false);
+      setSelectedPage(null);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setShowModal(false);
+    setSelectedPage(null);
+  };
 
   if (pagesLoading) return <p>Loading pages...</p>;
   return (
     <div className="container">
       <h2>Pages List</h2>
-      <Link to="/create-page">
-        <button>Create New Page</button>
-      </Link>
+      {canCreatePage && (
+        <Link to="/create-page">
+          <button>Create New Page</button>
+        </Link>
+      )}
       <table
         style={{
           width: "100%",
@@ -47,14 +72,38 @@ export default function PageList() {
               <td style={tdStyle}>{page.order}</td>
               <td style={tdStyle}>{page.group?.name || "-"}</td>
               <td style={tdStyle}>
-                {/* Actions will come here later */}
-                <button style={btnStyle}>Edit</button>
-                <button style={btnStyle}>Delete</button>
+                {canEdit && (
+                  <Link style={btnStyle} to={`/edit-page/${page._id}`}>
+                    Edit
+                  </Link>
+                )}
+
+                {canDelete && (
+                  <button
+                    style={btnStyle}
+                    onClick={() => handleDeleteClick(page)}
+                  >
+                    Delete
+                  </button>
+                )}
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+      {showModal && (
+        <div style={modalOverlay}>
+          <div style={modalContent}>
+            <p>Are you sure you want to delete "{selectedPage?.name}"?</p>
+            <button style={btnStyle} onClick={handleConfirmDelete}>
+              Yes, Delete
+            </button>
+            <button style={btnStyle} onClick={handleCancelDelete}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -81,4 +130,23 @@ const btnStyle = {
   border: "none",
   borderRadius: "4px",
   cursor: "pointer",
+};
+const modalOverlay = {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  width: "100vw",
+  height: "100vh",
+  backgroundColor: "rgba(0,0,0,0.5)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+};
+
+const modalContent = {
+  backgroundColor: "#fff",
+  padding: "20px",
+  borderRadius: "8px",
+  minWidth: "300px",
+  textAlign: "center",
 };

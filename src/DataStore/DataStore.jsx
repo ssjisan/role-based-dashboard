@@ -19,20 +19,33 @@ export default function DataStore({ children }) {
     loading,
     error,
     setError,
+    can,
   } = useLoginData();
   const {
     pageLoading,
     pageError,
     pageSuccess,
     createPage,
+    updatePage,
+    fetchPages,
+    fetchPageById,
     setPageError,
     setPageSuccess,
     pages,
     pagesLoading,
+    deletePage,
   } = usePageData();
-  const { createRole, getRoles } = useRoleData();
+  const { createRole, getRoles, getRoleById, updateRole } = useRoleData();
   const { registerUser } = useUserData();
-  const { getAccessiblePages, fetchRolePermissions } = usePermissionData();
+  const {
+    getAccessiblePages,
+    fetchRolePermissions,
+    hasPermission,
+    getPagePermissions,
+    currentRole,
+    permissionLoading,
+    permissionReady,
+  } = usePermissionData();
   const {
     createPageGroup,
     groupLoading,
@@ -51,24 +64,35 @@ export default function DataStore({ children }) {
         loading,
         error,
         setError,
+        can,
         // Page Data Action
         pageLoading,
         pageError,
         pageSuccess,
         createPage,
+        updatePage,
+        fetchPages,
+        fetchPageById,
         setPageError,
         setPageSuccess,
         pages,
         pagesLoading,
+        deletePage,
         // Role Data
         createRole,
         getRoles,
+        getRoleById,
+        updateRole,
         // User Data
         registerUser,
         // Accessable Pages
-        getAccessiblePages,
         fetchRolePermissions,
-        // Page Group
+        getAccessiblePages,
+        hasPermission,
+        getPagePermissions,
+        currentRole,
+        permissionLoading,
+        permissionReady,
         createPageGroup,
         groupLoading,
         groupError,

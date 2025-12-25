@@ -15,7 +15,7 @@ export default function usePageData() {
       .replace(/\s+/g, "-")
       .replace(/[^a-z0-9-]/g, "");
 
-  // Create Page Function (now with availableActions)
+  // Create Page
   const createPage = async (
     name,
     description,
@@ -29,14 +29,13 @@ export default function usePageData() {
 
     try {
       const slug = toSlug(name);
-
       const response = await axios.post("/create-page", {
         name,
         slug,
         description,
         availableActions,
         order,
-        group, // ✅ include group
+        group,
       });
 
       if (response.data.success) {
@@ -59,32 +58,112 @@ export default function usePageData() {
     }
   };
 
+  // Fetch all pages
   const fetchPages = async () => {
     setPagesLoading(true);
     try {
       const res = await axios.get("/pages-list");
-      if (res.data.success) {
-        setPages(res.data.pages);
-      }
+      if (res.data.success) setPages(res.data.pages);
     } catch (err) {
       console.error("Error fetching pages:", err);
     }
     setPagesLoading(false);
   };
 
+  // ✅ Fetch single page by ID
+  const fetchPageById = async (id) => {
+    try {
+      const res = await axios.get(`/page/${id}`);
+      if (res.data.success) return res.data.page;
+    } catch (err) {
+      console.error("Error fetching page:", err);
+      return null;
+    }
+  };
+
+  // ✅ Update page by ID
+  const updatePage = async (
+    id,
+    name,
+    description,
+    availableActions = [],
+    order,
+    group = null
+  ) => {
+    setPageLoading(true);
+    setPageError("");
+    setPageSuccess("");
+
+    try {
+      const slug = toSlug(name);
+      const res = await axios.put(`/edit-page/${id}`, {
+        name,
+        slug,
+        description,
+        availableActions,
+        order,
+        group,
+      });
+
+      if (res.data.success) {
+        setPageSuccess("Page updated successfully");
+        fetchPages();
+        return { success: true };
+      }
+    } catch (err) {
+      const data = err.response?.data;
+      if (data?.suggestedOrder) {
+        setPageError(
+          `${data.message}. Suggested order: ${data.suggestedOrder}`
+        );
+        return { success: false, suggestedOrder: data.suggestedOrder };
+      }
+      setPageError(data?.message || "Error updating page");
+      return { success: false };
+    } finally {
+      setPageLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchPages();
   }, []);
+
+  // ✅ Delete page by ID
+  const deletePage = async (id) => {
+    setPageLoading(true);
+    setPageError("");
+    setPageSuccess("");
+
+    try {
+      const res = await axios.delete(`/delete-page/${id}`);
+      if (res.data.success) {
+        setPageSuccess("Page deleted successfully");
+        // Refresh pages list after deletion
+        fetchPages();
+        return { success: true };
+      }
+    } catch (err) {
+      const data = err.response?.data;
+      setPageError(data?.message || "Error deleting page");
+      return { success: false };
+    } finally {
+      setPageLoading(false);
+    }
+  };
 
   return {
     pageLoading,
     pageError,
     pageSuccess,
     createPage,
+    updatePage,
+    fetchPages,
+    fetchPageById,
     setPageError,
     setPageSuccess,
-    fetchPages,
     pages,
     pagesLoading,
+    deletePage,
   };
 }

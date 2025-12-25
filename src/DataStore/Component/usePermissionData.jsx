@@ -1,31 +1,75 @@
 import axios from "axios";
+import { useEffect, useMemo, useState } from "react";
 
 export default function usePermissionData() {
+  const [currentRole, setCurrentRole] = useState(null);
+  const [permissionLoading, setPermissionLoading] = useState(false);
+  const [permissionReady, setPermissionReady] = useState(false);
+
+  // Fetch role from API
   const fetchRolePermissions = async (roleId) => {
     try {
+      setPermissionLoading(true);
       const res = await axios.get(`/role/${roleId}`);
+
       if (res.data.success) {
         const role = res.data.role;
-        console.log("roleId", role);
-
-        // Store in localStorage for global access
         localStorage.setItem("rbac_role_info", JSON.stringify(role));
+        setCurrentRole(role);
         return role;
       }
-      return null;
     } catch (err) {
       console.error("Error fetching role:", err);
-      return null;
+    } finally {
+      setPermissionLoading(false);
     }
   };
 
-  const getAccessiblePages = () => {
-    const roleStr = localStorage.getItem("rbac_role_info");
-    if (!roleStr) return [];
+  // Normalize permissions (VERY IMPORTANT)
+  const permissionMap = useMemo(() => {
+    if (!currentRole?.permissions) return {};
 
-    const role = JSON.parse(roleStr);
-    return role.permissions.map((p) => p.page);
+    return currentRole.permissions.reduce((acc, p) => {
+      acc[p.page] = new Set(p.actions);
+      return acc;
+    }, {});
+  }, [currentRole]);
+
+  // Permission check
+  const hasPermission = (page, action) => {
+    return Boolean(permissionMap[page]?.has(action));
   };
 
-  return { fetchRolePermissions, getAccessiblePages };
+  // Page actions
+  const getPagePermissions = (page) => {
+    return permissionMap[page] ? Array.from(permissionMap[page]) : [];
+  };
+
+  const getAccessiblePages = () => Object.keys(permissionMap);
+
+  // Hydrate role from localStorage ONCE
+  useEffect(() => {
+    const cached = localStorage.getItem("rbac_role_info");
+
+    if (cached) {
+      try {
+        setCurrentRole(JSON.parse(cached));
+      } catch (e) {
+        console.error("Invalid cached role", e.message);
+      }
+    }
+
+    // ✅ Mark permissions as ready AFTER hydration
+    setPermissionReady(true);
+  }, []);
+
+  return {
+    fetchRolePermissions,
+    hasPermission,
+    getPagePermissions,
+    getAccessiblePages,
+    currentRole,
+    permissionLoading,
+    permissionReady,
+  };
 }
