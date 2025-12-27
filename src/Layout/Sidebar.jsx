@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { Fragment, useContext, useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Box,
@@ -11,6 +11,9 @@ import {
   Collapse,
   Tooltip,
   Divider,
+  Popover,
+  MenuItem,
+  Typography,
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -37,11 +40,14 @@ export default function Sidebar() {
 
   const [open, setOpen] = useState(true);
   const [openGroup, setOpenGroup] = useState(null);
+  const [popoverAnchorEl, setPopoverAnchorEl] = useState(null);
+  const [popoverGroupId, setPopoverGroupId] = useState(null);
+
   const location = useLocation();
 
   useEffect(() => {
     fetchPageGroups();
-  }, []);
+  }, [fetchPageGroups]);
 
   if (!isLoggedIn()) return null;
 
@@ -61,124 +67,209 @@ export default function Sidebar() {
   });
 
   return (
-    <Drawer
-      variant="permanent"
-      sx={{
-        width: open ? DRAWER_WIDTH : MINI_WIDTH,
-        flexShrink: 0,
-        "& .MuiDrawer-paper": {
-          width: open ? DRAWER_WIDTH : MINI_WIDTH,
-          boxSizing: "border-box",
-          overflowX: "hidden",
-          transition: "width 0.3s",
-        },
-      }}
-    >
-      {/* Header */}
-      <Box
+    <Fragment>
+      <Drawer
+        variant="permanent"
         sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: open ? "space-between" : "center",
-          p: 1.5,
+          width: open ? DRAWER_WIDTH : MINI_WIDTH,
+          flexShrink: 0,
+          "& .MuiDrawer-paper": {
+            width: open ? DRAWER_WIDTH : MINI_WIDTH,
+            boxSizing: "border-box",
+            overflowX: "hidden",
+            transition: "width 0.3s",
+          },
         }}
       >
-        {open && <strong>Dashboard</strong>}
-        <IconButton onClick={() => setOpen(!open)}>
-          <MenuIcon />
-        </IconButton>
-      </Box>
+        {/* Header */}
+        <Box sx={{ p: 2, textAlign: open ? "left" : "center" }}>
+          {open && <strong>Dashboard</strong>}
+        </Box>
+        <Divider />
 
-      <Divider />
-
-      <List>
-        {/* Ungrouped pages */}
-        {ungroupedPages.map((p) => {
-          const active = location.pathname === `/${p.slug}`;
-          return (
-            <Tooltip key={p._id} title={!open ? p.name : ""} placement="right">
+        <List sx={{ padding: "0px 8px" }}>
+          {/* Ungrouped */}
+          {ungroupedPages.map((p) => {
+            const active = location.pathname.startsWith(`/${p.slug}`);
+            return open ? (
               <ListItemButton
+                key={p._id}
                 component={Link}
                 to={`/${p.slug}`}
                 selected={active}
-                sx={{ justifyContent: open ? "initial" : "center" }}
               >
-                <ListItemIcon sx={{ minWidth: 0, mr: open ? 2 : "auto" }}>
+                <ListItemIcon sx={{ minWidth: 36 }}>
                   <Description />
                 </ListItemIcon>
-                {open && <ListItemText primary={p.name} />}
+                <ListItemText primary={p.name} />
               </ListItemButton>
-            </Tooltip>
-          );
-        })}
-
-        {/* Grouped pages */}
-        {pageGroups.map((group) => {
-          const groupPages = pagesByGroupId[group._id] || [];
-          if (!groupPages.length) return null;
-
-          const isOpen = openGroup === group._id;
-
-          return (
-            <Box key={group._id}>
-              <Tooltip title={!open ? group.name : ""} placement="right">
+            ) : (
+              <Tooltip key={p._id} title={p.name} placement="right">
                 <ListItemButton
-                  onClick={() => setOpenGroup(isOpen ? null : group._id)}
-                  sx={{ justifyContent: open ? "initial" : "center" }}
+                  component={Link}
+                  to={`/${p.slug}`}
+                  selected={active}
+                  sx={{ flexDirection: "column", py: 1.5 }}
                 >
-                  <ListItemIcon sx={{ minWidth: 0, mr: open ? 2 : "auto" }}>
-                    <Folder />
+                  <ListItemIcon sx={{ minWidth: 0 }}>
+                    {<Description />}
                   </ListItemIcon>
-                  {open && (
-                    <>
-                      <ListItemText primary={group.name} />
-                      {isOpen ? <ExpandLess /> : <ExpandMore />}
-                    </>
-                  )}
+                  <Typography sx={{ fontSize: 10 }}>{p.name}</Typography>
                 </ListItemButton>
               </Tooltip>
+            );
+          })}
 
-              <Collapse in={isOpen && open} timeout="auto" unmountOnExit>
-                <List component="div" disablePadding>
-                  {groupPages.map((p) => {
-                    const active = location.pathname === `/${p.slug}`;
-                    return (
-                      <ListItemButton
-                        key={p._id}
-                        component={Link}
-                        to={`/${p.slug}`}
-                        selected={active}
-                        sx={{ pl: 4 }}
+          {/* Grouped */}
+          {pageGroups.map((group) => {
+            const groupPages = pagesByGroupId[group._id] || [];
+            if (!groupPages.length) return null;
+            const isOpen = openGroup === group._id;
+
+            return (
+              <Box key={group._id}>
+                {open ? (
+                  <>
+                    <ListItemButton
+                      onClick={() => setOpenGroup(isOpen ? null : group._id)}
+                    >
+                      <ListItemIcon sx={{ minWidth: 36 }}>
+                        <Folder />
+                      </ListItemIcon>
+                      <ListItemText primary={group.name} />
+                      {isOpen ? <ExpandLess /> : <ExpandMore />}
+                    </ListItemButton>
+                    <Collapse in={isOpen} timeout="auto" unmountOnExit>
+                      <List component="div" disablePadding>
+                        {groupPages.map((p) => (
+                          <ListItemButton
+                            key={p._id}
+                            component={Link}
+                            to={`/${p.slug}`}
+                            sx={{ pl: 4 }}
+                            selected={location.pathname.startsWith(
+                              `/${p.slug}`
+                            )}
+                          >
+                            <ListItemIcon>
+                              <Description fontSize="small" />
+                            </ListItemIcon>
+                            <ListItemText primary={p.name} />
+                          </ListItemButton>
+                        ))}
+                      </List>
+                    </Collapse>
+                  </>
+                ) : (
+                  <Tooltip title={group.name} placement="right" key={group._id}>
+                    <ListItemButton
+                      onClick={(e) => {
+                        setPopoverAnchorEl(e.currentTarget);
+                        setPopoverGroupId(group._id);
+                      }}
+                      sx={{ flexDirection: "column", py: 1.5 }}
+                    >
+                      <ListItemIcon sx={{ minWidth: 0 }}>
+                        <Folder />
+                      </ListItemIcon>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          flexDirection: "column",
+                        }}
                       >
-                        <ListItemIcon>
-                          <Description fontSize="small" />
-                        </ListItemIcon>
-                        <ListItemText primary={p.name} />
-                      </ListItemButton>
-                    );
-                  })}
-                </List>
-              </Collapse>
-            </Box>
-          );
-        })}
-      </List>
+                        <Typography sx={{ fontSize: 10 }}>
+                          {group.name}
+                        </Typography>
+                        <Box sx={{ mt: 0.5 }}>
+                          {<ExpandMore sx={{ fontSize: 14 }} />}
+                        </Box>
+                      </Box>
+                    </ListItemButton>
+                  </Tooltip>
+                )}
+              </Box>
+            );
+          })}
+        </List>
 
-      {/* Logout bottom */}
-      <Box sx={{ mt: "auto" }}>
-        <Divider />
-        <Tooltip title={!open ? "Logout" : ""} placement="right">
-          <ListItemButton
-            onClick={logout}
-            sx={{ justifyContent: open ? "initial" : "center" }}
-          >
-            <ListItemIcon sx={{ minWidth: 0, mr: open ? 2 : "auto" }}>
-              <Logout />
-            </ListItemIcon>
-            {open && <ListItemText primary="Logout" />}
-          </ListItemButton>
-        </Tooltip>
+        {/* Logout */}
+        <Box sx={{ mt: "auto" }}>
+          <Divider />
+          {open ? (
+            <ListItemButton onClick={logout}>
+              <ListItemIcon>
+                <Logout />
+              </ListItemIcon>
+              <ListItemText primary="Logout" />
+            </ListItemButton>
+          ) : (
+            <Tooltip title="Logout" placement="right">
+              <ListItemButton
+                onClick={logout}
+                sx={{ flexDirection: "column", py: 1.5 }}
+              >
+                <ListItemIcon sx={{ minWidth: 0 }}>
+                  <Logout />
+                </ListItemIcon>
+                <Typography sx={{ fontSize: 10 }}>Logout</Typography>
+              </ListItemButton>
+            </Tooltip>
+          )}
+        </Box>
+      </Drawer>
+
+      {/* Toggle button */}
+      <Box
+        sx={{
+          position: "fixed",
+          top: 48,
+          left: open ? DRAWER_WIDTH - 20 : MINI_WIDTH - 20,
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+          transition: "left 0.3s",
+        }}
+      >
+        <IconButton
+          onClick={() => setOpen(!open)}
+          sx={{
+            backgroundColor: "#fff",
+            border: "1px solid red",
+            boxShadow: 2,
+          }}
+        >
+          <MenuIcon
+            sx={{ transform: open ? "rotate(0deg)" : "rotate(180deg)" }}
+          />
+        </IconButton>
       </Box>
-    </Drawer>
+
+      {/* Popover for collapsed groups */}
+      <Popover
+        open={Boolean(popoverAnchorEl)}
+        anchorEl={popoverAnchorEl}
+        onClose={() => {
+          setPopoverAnchorEl(null);
+          setPopoverGroupId(null);
+        }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "left" }}
+        PaperProps={{ sx: { ml: "12px", minWidth: 200 } }}
+      >
+        {(pagesByGroupId[popoverGroupId] || []).map((p) => (
+          <MenuItem
+            key={p._id}
+            component={Link}
+            to={`/${p.slug}`}
+            onClick={() => {
+              setPopoverAnchorEl(null);
+              setPopoverGroupId(null);
+            }}
+          >
+            {p.name}
+          </MenuItem>
+        ))}
+      </Popover>
+    </Fragment>
   );
 }
