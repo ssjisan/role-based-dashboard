@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../axios";
 
 export default function usePageData() {
   const [pageLoading, setPageLoading] = useState(false);
@@ -29,7 +29,7 @@ export default function usePageData() {
 
     try {
       const slug = toSlug(name);
-      const response = await axios.post("/create-page", {
+      const response = await api.post("/create-page", {
         name,
         slug,
         description,
@@ -62,7 +62,7 @@ export default function usePageData() {
   const fetchPages = async () => {
     setPagesLoading(true);
     try {
-      const res = await axios.get("/pages-list");
+      const res = await api.get("/pages-list");
       if (res.data.success) setPages(res.data.pages);
     } catch (err) {
       console.error("Error fetching pages:", err);
@@ -73,7 +73,7 @@ export default function usePageData() {
   // ✅ Fetch single page by ID
   const fetchPageById = async (id) => {
     try {
-      const res = await axios.get(`/page/${id}`);
+      const res = await api.get(`/page/${id}`);
       if (res.data.success) return res.data.page;
     } catch (err) {
       console.error("Error fetching page:", err);
@@ -96,7 +96,7 @@ export default function usePageData() {
 
     try {
       const slug = toSlug(name);
-      const res = await axios.put(`/edit-page/${id}`, {
+      const res = await api.put(`/edit-page/${id}`, {
         name,
         slug,
         description,
@@ -136,7 +136,7 @@ export default function usePageData() {
     setPageSuccess("");
 
     try {
-      const res = await axios.delete(`/delete-page/${id}`);
+      const res = await api.delete(`/delete-page/${id}`);
       if (res.data.success) {
         setPageSuccess("Page deleted successfully");
         // Refresh pages list after deletion

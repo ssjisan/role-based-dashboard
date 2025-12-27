@@ -1,5 +1,5 @@
-import axios from "axios";
 import { useState } from "react";
+import api from "../axios";
 
 export default function usePageGroupData() {
   const [groupLoading, setGroupLoading] = useState(false);
@@ -11,7 +11,7 @@ export default function usePageGroupData() {
     setGroupError("");
 
     try {
-      const res = await axios.post("/page-group", payload);
+      const res = await api.post("/page-group", payload);
       return res.data;
     } catch (err) {
       const msg = err.response?.data?.message || "Failed to create page group";
@@ -23,7 +23,7 @@ export default function usePageGroupData() {
   };
   const fetchPageGroups = async () => {
     try {
-      const res = await axios.get("/all-page-groups");
+      const res = await api.get("/all-page-groups");
       if (res.data.success) {
         setPageGroups(res.data.groups);
       }

@@ -1,5 +1,5 @@
-import axios from "axios";
 import { useEffect, useMemo, useState } from "react";
+import api from "../axios";
 
 export default function usePermissionData() {
   const [currentRole, setCurrentRole] = useState(null);
@@ -10,7 +10,7 @@ export default function usePermissionData() {
   const fetchRolePermissions = async (roleId) => {
     try {
       setPermissionLoading(true);
-      const res = await axios.get(`/role/${roleId}`);
+      const res = await api.get(`/role/${roleId}`);
 
       if (res.data.success) {
         const role = res.data.role;

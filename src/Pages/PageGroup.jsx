@@ -1,5 +1,4 @@
 import { useContext, useState } from "react";
-import Navbar from "../Layout/Navbar";
 import { DataContext } from "../DataStore/DataContext";
 
 export default function PageGroup() {
@@ -28,8 +27,6 @@ export default function PageGroup() {
 
   return (
     <div>
-      <Navbar />
-
       <div style={{ maxWidth: "500px", margin: "40px auto" }}>
         <h2>Create Page Group</h2>
 

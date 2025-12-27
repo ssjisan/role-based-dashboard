@@ -1,11 +1,6 @@
 import React from "react";
-import Navbar from "../Layout/Navbar";
+import Navbar from "../Layout/Sidebar";
 
 export default function Test() {
-  return (
-    <div>
-      <Navbar />
-      Test
-    </div>
-  );
+  return <div>Test</div>;
 }

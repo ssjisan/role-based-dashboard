@@ -6,7 +6,7 @@ import { DataContext } from "../DataStore/DataContext";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
+  const [showPassword, setShowPassword] = useState(false);
   // Use DataContext, not DataStore
   const { login, loading, error, fetchRolePermissions } =
     useContext(DataContext);
@@ -57,7 +57,7 @@ export default function Login() {
 
           <div style={styles.formGroup}>
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -65,6 +65,13 @@ export default function Login() {
               disabled={loading}
               required
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)} // ✅ toggle
+              style={styles.showPasswordBtn}
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
           </div>
 
           <button type="submit" style={styles.button} disabled={loading}>

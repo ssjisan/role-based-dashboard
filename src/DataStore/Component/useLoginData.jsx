@@ -1,6 +1,6 @@
 import { useState } from "react";
-import axios from "axios";
 import usePermissionData from "./usePermissionData";
+import api from "../axios";
 
 export const useLoginData = () => {
   const [loading, setLoading] = useState(false);
@@ -13,7 +13,7 @@ export const useLoginData = () => {
     setError("");
 
     try {
-      const response = await axios.post("/login", {
+      const response = await api.post("/login", {
         email,
         password,
       });

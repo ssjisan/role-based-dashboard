@@ -1,9 +1,9 @@
-import axios from "axios";
+import api from "../axios";
 
 export default function useRoleData() {
   const createRole = async (roleData) => {
     try {
-      const res = await axios.post("/create-role", roleData);
+      const res = await api.post("/create-role", roleData);
       return res.data;
     } catch (err) {
       return {
@@ -13,13 +13,13 @@ export default function useRoleData() {
     }
   };
   const getRoles = async () => {
-    const res = await axios.get("/roles");
+    const res = await api.get("/roles");
     return res.data.roles;
   };
 
   const getRoleById = async (id) => {
     try {
-      const res = await axios.get(`/role/${id}`);
+      const res = await api.get(`/role/${id}`);
       return res.data.success ? res.data.role : null;
     } catch (err) {
       console.error("Error fetching role:", err);
@@ -29,7 +29,7 @@ export default function useRoleData() {
 
   const updateRole = async (id, roleData) => {
     try {
-      const res = await axios.put(`/edit-role/${id}`, roleData);
+      const res = await api.put(`/edit-role/${id}`, roleData);
       return res.data;
     } catch (err) {
       return {

@@ -6,6 +6,7 @@ export default function PageList() {
   const { pages, pagesLoading, deletePage, hasPermission } =
     useContext(DataContext);
   const [showModal, setShowModal] = useState(false);
+  const [showError, setShowError] = useState("");
   const [selectedPage, setSelectedPage] = useState(null);
   const canCreatePage = hasPermission("Pages", "create");
   const canEdit = hasPermission("Pages", "edit");
@@ -16,6 +17,13 @@ export default function PageList() {
   };
 
   const handleConfirmDelete = async () => {
+    if (!canDelete) {
+      setShowError("You do not have permission to delete this page.");
+      setShowModal(false);
+
+      return;
+    }
+
     if (selectedPage) {
       await deletePage(selectedPage._id);
       setShowModal(false);
@@ -32,6 +40,7 @@ export default function PageList() {
   return (
     <div className="container">
       <h2>Pages List</h2>
+      <p style={{ color: "red" }}>{showError}</p>
       {canCreatePage && (
         <Link to="/create-page">
           <button>Create New Page</button>
@@ -77,7 +86,6 @@ export default function PageList() {
                     Edit
                   </Link>
                 )}
-
                 {canDelete && (
                   <button
                     style={btnStyle}

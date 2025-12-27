@@ -1,4 +1,3 @@
-import axios from "axios";
 import { useLoginData } from "./Component/useLoginData";
 import PropTypes from "prop-types";
 import { DataContext } from "./DataContext";
@@ -7,7 +6,6 @@ import useRoleData from "./Component/useRoleData";
 import useUserData from "./Component/useUserData";
 import usePermissionData from "./Component/usePermissionData";
 import usePageGroupData from "./Component/usePageGroupData";
-axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL;
 
 export default function DataStore({ children }) {
   const {

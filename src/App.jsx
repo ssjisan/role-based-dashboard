@@ -2,6 +2,7 @@ import { BrowserRouter } from "react-router";
 import MainRoute from "./Router/MainRouter";
 import { Toaster } from "react-hot-toast";
 import DataStore from "./DataStore/DataStore";
+import Theme from "./Theme/index";
 
 function App() {
   return (
@@ -31,7 +32,9 @@ function App() {
             },
           }}
         />
-        <MainRoute />
+        <Theme>
+          <MainRoute />
+        </Theme>
       </DataStore>
     </BrowserRouter>
   );

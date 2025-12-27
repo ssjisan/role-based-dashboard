@@ -1,5 +1,4 @@
 import { useContext, useEffect, useState } from "react";
-import Navbar from "../Layout/Navbar";
 import { DataContext } from "../DataStore/DataContext";
 
 export default function User() {
@@ -40,7 +39,6 @@ export default function User() {
 
   return (
     <div>
-      <Navbar />
       <div className="container">
         <h2>Create User</h2>
 

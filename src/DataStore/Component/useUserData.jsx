@@ -1,9 +1,9 @@
-import axios from "axios";
+import api from "../axios";
 
 export default function useUserData() {
   const registerUser = async (data) => {
     try {
-      const res = await axios.post("/register", data);
+      const res = await api.post("/register", data);
       return res.data;
     } catch (err) {
       return {

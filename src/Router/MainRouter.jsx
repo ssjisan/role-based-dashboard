@@ -12,6 +12,7 @@ import CreateRoles from "../Pages/Roles/CreateRoles";
 import Roles from "../Pages/Roles/Roles";
 import Test from "../Pages/Test";
 import PermissionRoute from "./PermissionRoute";
+import MainLayout from "../Layout/MainLayout";
 
 export default function MainRoute() {
   return (
@@ -19,16 +20,18 @@ export default function MainRoute() {
       <Route path="/login" element={<Login />} />
       <Route element={<ProtectedRoute />}>
         <Route element={<PermissionRoute />}>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/pages" element={<Pages />} />
-          <Route path="/roles" element={<Roles />} />
-          <Route path="/test" element={<Test />} />
-          <Route path="/create-roles" element={<CreateRoles />} />
-          <Route path="/edit-role/:id" element={<EditRoles />} />
-          <Route path="/user" element={<User />} />
-          <Route path="/page-group" element={<PageGroup />} />
-          <Route path="/create-page" element={<CreatePages />} />
-          <Route path="/edit-page/:id" element={<EditPages />} />
+          <Route element={<MainLayout />}>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/pages" element={<Pages />} />
+            <Route path="/roles" element={<Roles />} />
+            <Route path="/test" element={<Test />} />
+            <Route path="/create-roles" element={<CreateRoles />} />
+            <Route path="/edit-role/:id" element={<EditRoles />} />
+            <Route path="/user" element={<User />} />
+            <Route path="/page-group" element={<PageGroup />} />
+            <Route path="/create-page" element={<CreatePages />} />
+            <Route path="/edit-page/:id" element={<EditPages />} />
+          </Route>
         </Route>
       </Route>
     </Routes>
